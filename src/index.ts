@@ -180,6 +180,7 @@ class SolanaBuyBot {
       const isWinner = lottery.result === "🏆 WINNER 🏆";
       const message = createMessage({
         amount: formatAmountShort(amount), // Use solVolume for amount
+        wallet,
         result: lottery.result,
         jackpotValue,
         jackpotValueUsd,

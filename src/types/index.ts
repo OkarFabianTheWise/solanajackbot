@@ -11,6 +11,7 @@ export interface Config {
 
 export interface BuyEventData {
   amount: string;
+  wallet: string;
   result: string;
   jackpotValue: number;
   jackpotValueUsd: number;

@@ -1,6 +1,6 @@
 // src/index.ts
 import TelegramBot from 'node-telegram-bot-api';
-import { Connection, PublicKey, ParsedTransactionWithMeta, SignatureResult, RpcResponseAndContext, Finality, Logs } from '@solana/web3.js'; // Import Logs type
+import { Connection, PublicKey } from '@solana/web3.js'; // Import Logs type
 import dotenv from 'dotenv';
 import * as fs from 'fs';
 import { PriceService } from './services/PriceService';

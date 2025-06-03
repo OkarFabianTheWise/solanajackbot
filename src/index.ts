@@ -8,7 +8,6 @@ import { WalletService } from './services/WalletService';
 import { Config } from './types'; // Import the Config interface
 import {
   calculateProbability,
-  generateUniqueRandomNumbers,
   percentChance,
   formatAmountShort,
   createSocialsKeyboard,
@@ -214,6 +213,7 @@ class SolanaBuyBot {
       } else {
         await this.bot.sendMessage(this.config.CHAT_ID, message, {
           parse_mode: 'HTML',
+          disable_web_page_preview: true,
           reply_markup: socialsKeyboard
         });
       }

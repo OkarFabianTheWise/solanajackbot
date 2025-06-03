@@ -12,14 +12,22 @@ import {
   percentChance,
   formatAmountShort,
   createSocialsKeyboard,
-  createMessage,
-  findTokenTransfers
+  createMessage
 } from './utils/helpers'; // Import utility functions
 import { Datastream } from '@solana-tracker/data-api';
-
+import express from 'express';
 
 // Load environment variables
 dotenv.config();
+
+// Start Express server for Heroku
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
 
 // Define a type for the Solana Tracker transaction data
 interface SolanaTrackerTransaction {

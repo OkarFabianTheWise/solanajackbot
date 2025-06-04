@@ -84,8 +84,8 @@ export function createSocialsKeyboard(tokenAddress: string): TelegramBot.InlineK
   return {
     inline_keyboard: [
       [
-        { text: '🌐 Website', url: 'https://example.com' }, // Replace with actual project website
-        { text: '🐦 Twitter', url: 'https://twitter.com/example' } // Replace with actual project Twitter
+        { text: '🌐 Website', url: 'https://www.blokbet.fun/' }, // Replace with actual project website
+        { text: '🐦 Twitter', url: 'https://x.com/blokbet_sol' } // Replace with actual project Twitter
       ],
       [
         { text: '💬 Telegram', url: 'https://t.me/example' }, // Replace with actual project Telegram

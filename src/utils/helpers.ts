@@ -101,7 +101,7 @@ export function createSocialsKeyboard(tokenAddress: string): TelegramBot.InlineK
 export function createMessage(data: BuyEventData): string {
   // format data.wallet to 5 characters
   const formattedWallet = data.wallet.slice(0, 5) + '...' + data.wallet.slice(-5);
-  return `🚀 New Play! <b>${data.amount} BlockBet tokens</b> were bought!\n
+  return `🚀 New Play! <b>${data.amount} BlokBet tokens</b> were bought!\n
 <b>${data.result}</b>
 <b>👷 Player: <a href="https://solscan.io/account/${data.wallet}" target="_blank">${formattedWallet}</a></b>\n
 🎰 Jackpot value: <b>${data.jackpotValue.toFixed(3)} SOL ($${data.jackpotValueUsd.toFixed(2)})</b>

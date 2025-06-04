@@ -8,7 +8,7 @@ import { BuyEventData } from '../types';
  */
 export function calculateProbability(value: number): number {
   try {
-    if (value > 97 && value < 200) return 1;
+    if (value > 100 && value < 200) return 1;
     if (value > 201 && value < 300) return 2;
     if (value > 301 && value < 400) return 3;
     if (value > 401 && value < 500) return 4;
@@ -18,7 +18,7 @@ export function calculateProbability(value: number): number {
     if (value > 801 && value < 900) return 8;
     if (value > 901 && value < 1000) return 9;
     if (value >= 1000) return 10;
-    return 2; // Default chance for smaller buys
+    return 3; // Default case if no conditions match
   } catch (error) {
     console.error('Error in calculateProbability:', error);
     return 3;

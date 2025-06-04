@@ -108,22 +108,6 @@ class SolanaBuyBot {
   }
 
   /**
-   * Process a token transfer transaction
-   */
-  private async processTransaction(signature: string): Promise<void> {
-    console.log(`❕ processTransaction bypassed due to Solana Tracker integration. Signature: ${signature}`);
-    return;
-  }
-
-  /**
-   * Handle individual token transfer
-   */
-  private async handleTokenTransfer(transfer: any, signature: string): Promise<void> {
-    console.log(`❕ handleTokenTransfer bypassed due to Solana Tracker integration. Signature: ${signature}`);
-    return;
-  }
-
-  /**
    * Monitor for new transactions using Solana Tracker data stream.
    */
   private monitorTransactions(): void {
@@ -135,15 +119,15 @@ class SolanaBuyBot {
         // Cast the transaction to the SolanaTrackerTransaction type
         const trackerTransaction = transaction as SolanaTrackerTransaction;
 
-        const solVolume = trackerTransaction.solVolume;
-        const volume = trackerTransaction.volume;
-        const wallet = trackerTransaction.wallet;
+        // const solVolume = trackerTransaction.solVolume;
+        // const volume = trackerTransaction.volume;
+        // const wallet = trackerTransaction.wallet;
 
-        console.log(`Buy Transaction:`);
-        console.log(`Amount: ${trackerTransaction.amount}`);
-        console.log(`  Wallet: ${wallet}`);
-        console.log(`  SOL Volume: ${solVolume}`);
-        console.log(`  USDC Volume: ${volume}`);
+        // console.log(`Buy Transaction:`);
+        // console.log(`Amount: ${trackerTransaction.amount}`);
+        // console.log(`  Wallet: ${wallet}`);
+        // console.log(`  SOL Volume: ${solVolume}`);
+        // console.log(`  USDC Volume: ${volume}`);
 
         // Process the transaction (e.g., send Telegram message)
         this.handleDexTrade(trackerTransaction);
@@ -155,7 +139,7 @@ class SolanaBuyBot {
     try {
       // Extract relevant information from the transaction
       const { amount, wallet, solVolume, volume } = transaction;
-      console.log(`Processing dextrade for ${wallet} ,  SOL Volume: ${solVolume}, USDC Volume: ${volume}`);
+      // console.log(`Processing dextrade for ${wallet} ,  SOL Volume: ${solVolume}, USDC Volume: ${volume}`);
 
       // Fetch SOL price
       const solPrice = 152; // this.priceService.getSolPrice();
@@ -164,9 +148,9 @@ class SolanaBuyBot {
       const amountInUsd = volume;
 
       // Ensure a minimum buy amount to trigger bot
-      const MIN_BUY_USD = 0.9; // This can be moved to config
+      const MIN_BUY_USD = 100; // This can be moved to config
       if (amountInUsd < MIN_BUY_USD) {
-        console.log(`Skipping small transaction: $${amountInUsd.toFixed(2)} (below $${MIN_BUY_USD})`);
+        // console.log(`Skipping small transaction: $${amountInUsd.toFixed(2)} (below $${MIN_BUY_USD})`);
         return;
       }
 
@@ -179,9 +163,9 @@ class SolanaBuyBot {
 
       // Calculate winning probability using helpers
       const chance = calculateProbability(amountInUsd);
-      console.log(`Calculated chance: ${chance}% for transaction of $${amountInUsd.toFixed(2)}`);
+      // console.log(`Calculated chance: ${chance}% for transaction of $${amountInUsd.toFixed(2)}`);
       const lottery = percentChance(chance);
-      console.log(`Lottery result: ${lottery.result} with winning number ${lottery.winningNumber}`);
+      // console.log(`Lottery result: ${lottery.result} with winning number ${lottery.winningNumber}`);
 
       // Prepare message
       const isWinner = lottery.result === "🏆 WINNER 🏆";

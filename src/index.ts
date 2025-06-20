@@ -185,11 +185,26 @@ class SolanaBuyBot {
       });
 
       // Send message with photo
-      const photoPath = './image/FedUp.jpeg';
+      // const photoPath = './image/FedUp.jpeg';
+      const mediaPath = './src/image/jackpot.mp4';
       const socialsKeyboard = createSocialsKeyboard(this.config.TOKEN_ADDRESS);
 
-      if (fs.existsSync(photoPath)) {
-        await this.bot.sendPhoto(this.config.CHAT_ID, photoPath, {
+      // if (fs.existsSync(photoPath)) {
+      //   await this.bot.sendPhoto(this.config.CHAT_ID, photoPath, {
+      //     caption: message,
+      //     parse_mode: 'HTML',
+      //     reply_markup: socialsKeyboard
+      //   });
+      // } else {
+      //   await this.bot.sendMessage(this.config.CHAT_ID, message, {
+      //     parse_mode: 'HTML',
+      //     disable_web_page_preview: true,
+      //     reply_markup: socialsKeyboard
+      //   });
+      // }
+
+      if (fs.existsSync(mediaPath)) {
+        await this.bot.sendVideo(this.config.CHAT_ID, mediaPath, {
           caption: message,
           parse_mode: 'HTML',
           reply_markup: socialsKeyboard

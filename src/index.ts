@@ -168,7 +168,6 @@ class SolanaBuyBot {
       // console.log(`Lottery result: ${lottery.result} with winning number ${lottery.winningNumber}`);
 
       // Prepare message
-      const isWinner = lottery.result === "🏆 WINNER 🏆";
       const message = createMessage({
         amount: formatAmountShort(amount), // Use solVolume for amount
         wallet,
@@ -185,8 +184,11 @@ class SolanaBuyBot {
       });
 
       // Send message with photo
-      // const photoPath = './image/FedUp.jpeg';
-      const mediaPath = './src/image/jackpot.mp4';
+      const isWinner = lottery.result === "🏆 WINNER 🏆";
+      const mediaPath = isWinner
+        ? './src/image/winner.mp4'
+        : './src/image/loser.mp4';
+
       const socialsKeyboard = createSocialsKeyboard(this.config.TOKEN_ADDRESS);
 
       // if (fs.existsSync(photoPath)) {

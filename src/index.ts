@@ -186,8 +186,8 @@ class SolanaBuyBot {
       // Send message with photo
       const isWinner = lottery.result === "🏆 WINNER 🏆";
       const mediaPath = isWinner
-        ? './src/image/winner.mp4'
-        : './src/image/loser.mp4';
+        ? './src/image/winnergif.mp4'
+        : './src/image/losergif.mp4';
 
       const socialsKeyboard = createSocialsKeyboard(this.config.TOKEN_ADDRESS);
 

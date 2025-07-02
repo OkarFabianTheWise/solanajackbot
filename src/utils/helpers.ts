@@ -89,7 +89,7 @@ export function createSocialsKeyboard(tokenAddress: string): TelegramBot.InlineK
       ],
       [
         { text: '💬 Telegram', url: 'https://t.me/BlokBetPortal' }, // Replace with actual project Telegram
-        { text: '📊 Chart', url: 'https://dexscreener.com/solana/' + FkzKwUfshdZN5kjq83h5XGPzsTmQcJvm7s7vRUPVMwk2 }
+        { text: '📊 Chart', url: 'https://dexscreener.com/solana/' + "FkzKwUfshdZN5kjq83h5XGPzsTmQcJvm7s7vRUPVMwk2" }
       ]
     ]
   };

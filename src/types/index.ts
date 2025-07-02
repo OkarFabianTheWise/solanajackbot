@@ -22,4 +22,6 @@ export interface BuyEventData {
   chance: number;
   winningNumber: number;
   potOfSamples: number[];
+  isWinner?: boolean;   // <-- add this
+  txHash?: string;
 }

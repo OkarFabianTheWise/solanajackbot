@@ -35,6 +35,8 @@ interface SolanaTrackerTransaction {
   solVolume: number;
   volume: number;
   wallet: string;
+  signature?: string; // <-- Add here
+  txHash?: string;
   // Add other properties as needed based on the actual data structure
 }
 
@@ -167,6 +169,9 @@ class SolanaBuyBot {
       const lottery = percentChance(chance);
       // console.log(`Lottery result: ${lottery.result} with winning number ${lottery.winningNumber}`);
 
+      const isWinner = lottery.result === "🏆 WINNER 🏆";
+      const txHash = transaction.signature || transaction.txHash || ''; 
+
       // Prepare message
       const message = createMessage({
         amount: formatAmountShort(amount), // Use solVolume for amount
@@ -180,11 +185,12 @@ class SolanaBuyBot {
         amountInUsd,
         chance,
         winningNumber: lottery.winningNumber,
-        potOfSamples: lottery.potOfSamples
+        potOfSamples: lottery.potOfSamples,
+        isWinner,        // <-- add this
+        txHash
       });
 
       // Send message with photo
-      const isWinner = lottery.result === "🏆 WINNER 🏆";
       const mediaPath = isWinner
         ? './src/image/winnergif.mp4'
         : './src/image/losergif.mp4';

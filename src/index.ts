@@ -137,103 +137,202 @@ class SolanaBuyBot {
     });
   }
 
+  // private async handleDexTrade(transaction: SolanaTrackerTransaction): Promise<void> {
+  //   try {
+  //     // Extract relevant information from the transaction
+  //     const { amount, wallet, solVolume, volume } = transaction;
+  //     // console.log(`Processing dextrade for ${wallet} ,  SOL Volume: ${solVolume}, USDC Volume: ${volume}`);
+
+  //     // Fetch SOL price
+  //     const solPrice = 152; // this.priceService.getSolPrice();
+
+  //     // Calculate USD value of the trade
+  //     const amountInUsd = volume;
+
+  //     // Ensure a minimum buy amount to trigger bot
+  //     const MIN_BUY_USD = 100; // This can be moved to config
+  //     if (amountInUsd < MIN_BUY_USD) {
+  //       // console.log(`Skipping small transaction: $${amountInUsd.toFixed(2)} (below $${MIN_BUY_USD})`);
+  //       return;
+  //     }
+
+  //     // Get jackpot information from WalletService
+  //     const jackpotBalance = await this.walletService.getJackpotBalance();
+  //     const jackpotValue = jackpotBalance / 2;
+  //     const jackpotValueUsd = jackpotValue * solPrice;
+  //     const nextJackpot = jackpotBalance / 4;
+  //     const nextJackpotUsd = nextJackpot * solPrice;
+
+  //     // Calculate winning probability using helpers
+  //     const chance = calculateProbability(amountInUsd);
+  //     // console.log(`Calculated chance: ${chance}% for transaction of $${amountInUsd.toFixed(2)}`);
+  //     const lottery = percentChance(chance);
+  //     // console.log(`Lottery result: ${lottery.result} with winning number ${lottery.winningNumber}`);
+
+  //     const isWinner = lottery.result === "🏆 WINNER 🏆";
+  //     const txHash = transaction.signature || transaction.txHash || ''; 
+
+  //     // Prepare message
+  //     const message = createMessage({
+  //       amount: formatAmountShort(amount), // Use solVolume for amount
+  //       wallet,
+  //       result: lottery.result,
+  //       jackpotValue,
+  //       jackpotValueUsd,
+  //       nextJackpot,
+  //       nextJackpotUsd,
+  //       solAmount: solVolume, // Use solVolume for solAmount
+  //       amountInUsd,
+  //       chance,
+  //       winningNumber: lottery.winningNumber,
+  //       potOfSamples: lottery.potOfSamples,
+  //       isWinner,        // <-- add this
+  //       txHash
+  //     });
+
+  //     // Send message with photo
+  //     const mediaPath = isWinner
+  //       ? './src/image/winnergif.mp4'
+  //       : './src/image/losergif.mp4';
+
+  //     const socialsKeyboard = createSocialsKeyboard(this.config.TOKEN_ADDRESS);
+
+  //     // if (fs.existsSync(photoPath)) {
+  //     //   await this.bot.sendPhoto(this.config.CHAT_ID, photoPath, {
+  //     //     caption: message,
+  //     //     parse_mode: 'HTML',
+  //     //     reply_markup: socialsKeyboard
+  //     //   });
+  //     // } else {
+  //     //   await this.bot.sendMessage(this.config.CHAT_ID, message, {
+  //     //     parse_mode: 'HTML',
+  //     //     disable_web_page_preview: true,
+  //     //     reply_markup: socialsKeyboard
+  //     //   });
+  //     // }
+
+  //     if (fs.existsSync(mediaPath)) {
+  //       await this.bot.sendVideo(this.config.CHAT_ID, mediaPath, {
+  //         caption: message,
+  //         parse_mode: 'HTML',
+  //         reply_markup: socialsKeyboard
+  //       });
+  //     } else {
+  //       await this.bot.sendMessage(this.config.CHAT_ID, message, {
+  //         parse_mode: 'HTML',
+  //         disable_web_page_preview: true,
+  //         reply_markup: socialsKeyboard
+  //       });
+  //     }
+
+  //     // Transfer winnings if winner
+  //     if (isWinner) {
+  //       console.log(`🏆 Winner found! Transferring ${jackpotValue.toFixed(3)} SOL to ${wallet}`); // Use wallet for winner address
+  //       await this.walletService.transferToWinner(jackpotValue, wallet); // Use wallet for winner address
+  //     }
+  //   } catch (error) {
+  //     console.error(`Error handling DEX trade:`, error);
+  //   }
+  // }
   private async handleDexTrade(transaction: SolanaTrackerTransaction): Promise<void> {
-    try {
-      // Extract relevant information from the transaction
-      const { amount, wallet, solVolume, volume } = transaction;
-      // console.log(`Processing dextrade for ${wallet} ,  SOL Volume: ${solVolume}, USDC Volume: ${volume}`);
+  try {
+    // Extract relevant information from the transaction
+    const { amount, wallet, solVolume, volume } = transaction;
 
-      // Fetch SOL price
-      const solPrice = 152; // this.priceService.getSolPrice();
+    // Fetch SOL price
+    const solPrice = 152; // this.priceService.getSolPrice();
 
-      // Calculate USD value of the trade
-      const amountInUsd = volume;
+    // Calculate USD value of the trade
+    const amountInUsd = volume;
 
-      // Ensure a minimum buy amount to trigger bot
-      const MIN_BUY_USD = 100; // This can be moved to config
-      if (amountInUsd < MIN_BUY_USD) {
-        // console.log(`Skipping small transaction: $${amountInUsd.toFixed(2)} (below $${MIN_BUY_USD})`);
-        return;
-      }
+    // Ensure a minimum buy amount to trigger bot
+    const MIN_BUY_USD = 100; // This can be moved to config
+    if (amountInUsd < MIN_BUY_USD) {
+      return;
+    }
 
-      // Get jackpot information from WalletService
-      const jackpotBalance = await this.walletService.getJackpotBalance();
-      const jackpotValue = jackpotBalance / 2;
-      const jackpotValueUsd = jackpotValue * solPrice;
-      const nextJackpot = jackpotBalance / 4;
-      const nextJackpotUsd = nextJackpot * solPrice;
+    // Get jackpot information from WalletService
+    const jackpotBalance = await this.walletService.getJackpotBalance();
+    const jackpotValue = jackpotBalance / 2;
+    const jackpotValueUsd = jackpotValue * solPrice;
+    const nextJackpot = jackpotBalance / 4;
+    const nextJackpotUsd = nextJackpot * solPrice;
 
-      // Calculate winning probability using helpers
-      const chance = calculateProbability(amountInUsd);
-      // console.log(`Calculated chance: ${chance}% for transaction of $${amountInUsd.toFixed(2)}`);
-      const lottery = percentChance(chance);
-      // console.log(`Lottery result: ${lottery.result} with winning number ${lottery.winningNumber}`);
+    // Calculate winning probability using helpers
+    const chance = calculateProbability(amountInUsd);
+    const lottery = percentChance(chance);
 
-      const isWinner = lottery.result === "🏆 WINNER 🏆";
-      const txHash = transaction.signature || transaction.txHash || ''; 
+    const isWinner = lottery.result === "🏆 WINNER 🏆";
 
-      // Prepare message
-      const message = createMessage({
-        amount: formatAmountShort(amount), // Use solVolume for amount
+    const socialsKeyboard = createSocialsKeyboard(this.config.TOKEN_ADDRESS);
+
+    if (isWinner) {
+      // 1. Transfer winnings and get payout transaction hash
+      console.log(`🏆 Winner found! Transferring ${jackpotValue.toFixed(3)} SOL to ${wallet}`);
+      const payoutTxHash = await this.walletService.transferToWinner(jackpotValue, wallet) || '';
+
+      // 2. Prepare winner message with payout hash
+      const winnerMessage = createMessage({
+        amount: formatAmountShort(amount),
         wallet,
         result: lottery.result,
         jackpotValue,
         jackpotValueUsd,
         nextJackpot,
         nextJackpotUsd,
-        solAmount: solVolume, // Use solVolume for solAmount
+        solAmount: solVolume,
         amountInUsd,
         chance,
         winningNumber: lottery.winningNumber,
         potOfSamples: lottery.potOfSamples,
-        isWinner,        // <-- add this
-        txHash
+        isWinner: true,
+        txHash: payoutTxHash // <-- Use payout hash here!
       });
 
-      // Send message with photo
-      const mediaPath = isWinner
-        ? './src/image/winnergif.mp4'
-        : './src/image/losergif.mp4';
-
-      const socialsKeyboard = createSocialsKeyboard(this.config.TOKEN_ADDRESS);
-
-      // if (fs.existsSync(photoPath)) {
-      //   await this.bot.sendPhoto(this.config.CHAT_ID, photoPath, {
-      //     caption: message,
-      //     parse_mode: 'HTML',
-      //     reply_markup: socialsKeyboard
-      //   });
-      // } else {
-      //   await this.bot.sendMessage(this.config.CHAT_ID, message, {
-      //     parse_mode: 'HTML',
-      //     disable_web_page_preview: true,
-      //     reply_markup: socialsKeyboard
-      //   });
-      // }
-
-      if (fs.existsSync(mediaPath)) {
-        await this.bot.sendVideo(this.config.CHAT_ID, mediaPath, {
-          caption: message,
-          parse_mode: 'HTML',
-          reply_markup: socialsKeyboard
-        });
-      } else {
-        await this.bot.sendMessage(this.config.CHAT_ID, message, {
-          parse_mode: 'HTML',
-          disable_web_page_preview: true,
-          reply_markup: socialsKeyboard
-        });
+      // 3. Send winner gif/video first, then message
+      const winnerMediaPath = './src/image/winnergif.mp4';
+      if (fs.existsSync(winnerMediaPath)) {
+        await this.bot.sendVideo(this.config.CHAT_ID, winnerMediaPath);
       }
+      await this.bot.sendMessage(this.config.CHAT_ID, winnerMessage, {
+        parse_mode: 'HTML',
+        disable_web_page_preview: true,
+        reply_markup: socialsKeyboard
+      });
 
-      // Transfer winnings if winner
-      if (isWinner) {
-        console.log(`🏆 Winner found! Transferring ${jackpotValue.toFixed(3)} SOL to ${wallet}`); // Use wallet for winner address
-        await this.walletService.transferToWinner(jackpotValue, wallet); // Use wallet for winner address
+    } else {
+      // Prepare loser message (no txHash)
+      const loserMessage = createMessage({
+        amount: formatAmountShort(amount),
+        wallet,
+        result: lottery.result,
+        jackpotValue,
+        jackpotValueUsd,
+        nextJackpot,
+        nextJackpotUsd,
+        solAmount: solVolume,
+        amountInUsd,
+        chance,
+        winningNumber: lottery.winningNumber,
+        potOfSamples: lottery.potOfSamples,
+        isWinner: false
+      });
+
+      // Send loser gif/video first, then message
+      const loserMediaPath = './src/image/losergif.mp4';
+      if (fs.existsSync(loserMediaPath)) {
+        await this.bot.sendVideo(this.config.CHAT_ID, loserMediaPath);
       }
-    } catch (error) {
-      console.error(`Error handling DEX trade:`, error);
+      await this.bot.sendMessage(this.config.CHAT_ID, loserMessage, {
+        parse_mode: 'HTML',
+        disable_web_page_preview: true,
+        reply_markup: socialsKeyboard
+      });
     }
+  } catch (error) {
+    console.error(`Error handling DEX trade:`, error);
   }
+}
 
   /**
    * Start the bot

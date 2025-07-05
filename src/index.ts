@@ -65,6 +65,7 @@ export class SolanaBuyBot {
     this.config = {
       BOT_TOKEN: process.env.BOT_TOKEN || '',
       JACKPOT_PRIVATE_KEY: process.env.JACKPOT_PRIVATE_KEY || '',
+      HOLDERS_JACKPOT_PRIVATE_KEY: process.env.HOLDERS_JACKPOT_PRIVATE_KEY || '',
       TOKEN_ADDRESS: process.env.TOKEN_ADDRESS || '',
       CHAT_ID: process.env.CHAT_ID || '',
       USE_TESTNET: process.env.USE_TESTNET === 'true',
@@ -78,6 +79,9 @@ export class SolanaBuyBot {
     }
     if (!this.config.JACKPOT_PRIVATE_KEY) {
       throw new Error('JACKPOT_PRIVATE_KEY is not set in environment variables.');
+    }
+    if (!this.config.HOLDERS_JACKPOT_PRIVATE_KEY) {
+      throw new Error('HOLDERS_JACKPOT_PRIVATE_KEY is not set in environment variables.');
     }
     if (!this.config.TOKEN_ADDRESS) {
       throw new Error('TOKEN_ADDRESS is not set in environment variables.');
@@ -109,12 +113,13 @@ export class SolanaBuyBot {
 
     // Initialize services
     this.priceService = PriceService.getInstance();
-    this.walletService = new WalletService(this.connection, this.config.JACKPOT_PRIVATE_KEY);
+    this.walletService = new WalletService(this.connection, this.config.JACKPOT_PRIVATE_KEY, this.config.HOLDERS_JACKPOT_PRIVATE_KEY);
 
     console.log(`🚀 Solana Buy Bot initialized`);
     console.log(`📡 RPC: ${this.config.RPC_ENDPOINT}`);
     console.log(`🪙 Token: ${this.config.TOKEN_ADDRESS}`);
     console.log(`🔑 Jackpot Wallet: ${this.walletService.getJackpotAddress()}`);
+    console.log(`🔑 Holders Jackpot Wallet: ${this.walletService.getHoldersJackpotAddress()}`);
   }
 
   /**
@@ -130,7 +135,7 @@ export class SolanaBuyBot {
         const trackerTransaction = transaction as SolanaTrackerTransaction;
 
         // priceUSD
-        const priceUsd: number = trackerTransaction.priceUsd; // Assuming volume is in USD
+        const priceUsd: number = trackerTransaction.priceUsd; // Assuming volume is in USD line 133
         const marketCap: number = 1000000000 * priceUsd;
 
         // send request to https://fee-harvester-a945e42c10b3.herokuapp.com/notification?marketCap=31000 using express
@@ -145,18 +150,18 @@ export class SolanaBuyBot {
           });
 
         // Process the transaction (e.g., send Telegram message)
-        this.handleDexTrade(trackerTransaction);
+        this.handleDexTrade(trackerTransaction, priceUsd);
       }
     });
   }
 
-  private async handleDexTrade(transaction: SolanaTrackerTransaction): Promise<void> {
+  private async handleDexTrade(transaction: SolanaTrackerTransaction, priceUsd: number): Promise<void> {
   try {
     // Extract relevant information from the transaction
     const { amount, wallet, solVolume, volume } = transaction;
 
     // Fetch SOL price
-    const solPrice = 152; // this.priceService.getSolPrice();
+    const solPrice = 149; // this.priceService.getSolPrice();
 
     // Calculate USD value of the trade
     const amountInUsd = volume;
@@ -183,12 +188,12 @@ export class SolanaBuyBot {
     const holderJackpotChance = calculateHolderJackpotProbability(amountInUsd);
     const shouldTriggerHolder = shouldTriggerHolderJackpot(holderJackpotChance);
     
-    console.log(`💰 Holder jackpot chance: ${holderJackpotChance}%, triggered: ${shouldTriggerHolder}`);
+    // console.log(`💰 Holder jackpot chance: ${holderJackpotChance}%, triggered: ${shouldTriggerHolder}`);
     
     if (shouldTriggerHolder) {
       // Trigger holder jackpot in parallel with regular jackpot
       console.log('🎯 Holder jackpot triggered!');
-      await this.announceRandomHolderWinner();
+      await this.announceRandomHolderWinner(priceUsd);
     }
 
     const socialsKeyboard = createSocialsKeyboard(this.config.TOKEN_ADDRESS);
@@ -285,7 +290,7 @@ export class SolanaBuyBot {
    * This function fetches token holders, picks a random one,
    * calculates their balance in SOL and USD, and sends a message.
    */
-  public async announceRandomHolderWinner() {
+  public async announceRandomHolderWinner(priceUsd: number) {
     // const mint = this.config.TOKEN_ADDRESS;
     const mint = "FkzKwUfshdZN5kjq83h5XGPzsTmQcJvm7s7vRUPVMwk2";
     const holders = await fetchTokenHolders(mint);
@@ -294,12 +299,12 @@ export class SolanaBuyBot {
     const excludedAddresses = [
       "11111111111111111111111111111111", // Example: Solana's "dead" address
       // this.config.TOKEN_ADDRESS,
-      mint
-      // ...add more as needed
+      mint,
+      "61zrL2qQgVDuATv8RUQ3UvWoitiC8GPZGcWexm93rWGL"
     ];
 
-    // Filter by minimum balance (example: 20,000,000,000,000 lamports = 20,000 tokens if 9 decimals)
-    const minBalance = 20000000000000;
+    // Filter by minimum balance (example: 1,000,000,000,000 lamports = 1million tokens)
+    const minBalance = 1_000_000_000_000;
     const eligible = holders.filter(
       h => Number(h.amount) >= minBalance && !excludedAddresses.includes(h.owner)
     );
@@ -313,19 +318,20 @@ export class SolanaBuyBot {
     const winnerRaw = eligible[Math.floor(Math.random() * eligible.length)]!;
 
     // Fetch SOL price
-    const solPrice = await this.priceService.getSolPrice();
+    const solPrice = 149; // await this.priceService.getSolPrice();
 
-    // Get jackpot balance and value
-    const jackpotBalance = await this.walletService.getJackpotBalance();
-    const jackpotValue = jackpotBalance / 2;
+    // Get holders jackpot balance and value
+    const holdersJackpotBalance = await this.walletService.getHoldersJackpotBalance();
+    const jackpotValue = holdersJackpotBalance / 2;
     const jackpotValueUsd = jackpotValue * solPrice;
 
-    // Winner's token balance (assuming 9 decimals)
-    const winnerBalance = Number(winnerRaw.amount) / 1e9;
-    const winnerBalanceUsd = winnerBalance * solPrice;
+    // Winner's token balance
+    const winnerBalance = Number(winnerRaw.amount) / 1e6;
+    const winnerBalanceUsd = winnerBalance * priceUsd;
 
-    // Transfer jackpot to winner and get tx hash
-    const payoutTxHash = await this.walletService.transferToWinner(jackpotValue, winnerRaw.owner) || '';
+    // Transfer from holders jackpot to winner and get tx hash
+    const payoutTxHash = await this.walletService.transferToHolderWinner(jackpotValue, winnerRaw.owner) || '';
+    console.log(`Transferred ${jackpotValue.toFixed(3)} SOL to holder winner ${winnerRaw.owner}, tx: ${payoutTxHash}`);
 
     // Prepare winner info for UI
     const winner: HolderInfo = {

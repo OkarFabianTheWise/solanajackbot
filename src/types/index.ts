@@ -2,6 +2,7 @@
 export interface Config {
   BOT_TOKEN: string;
   JACKPOT_PRIVATE_KEY: string;
+  HOLDERS_JACKPOT_PRIVATE_KEY: string;
   TOKEN_ADDRESS: string;
   CHAT_ID: string;
   USE_TESTNET: boolean;

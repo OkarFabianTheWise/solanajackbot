@@ -135,7 +135,7 @@ export class SolanaBuyBot {
         const trackerTransaction = transaction as SolanaTrackerTransaction;
 
         // priceUSD
-        const priceUsd: number = trackerTransaction.priceUsd; // Assuming volume is in USD line 133
+        const priceUsd: number = trackerTransaction.priceUsd; // Assuming volume is in USD
         const marketCap: number = 1000000000 * priceUsd;
 
         // send request to https://fee-harvester-a945e42c10b3.herokuapp.com/notification?marketCap=31000 using express

@@ -25,3 +25,15 @@ export interface BuyEventData {
   isWinner?: boolean;   // <-- add this
   txHash?: string;
 }
+
+export interface HolderInfo {
+  rank: number;
+  wallet: string;
+  balance: number;
+  balanceUsd: number;
+  txHash: string;
+  wonAmount: number;      // Amount won (in SOL)
+  wonUsd: number;         // Amount won in USD
+  tokenSymbol?: string;   // Token symbol (default: 'CC')
+  wonSymbol?: string;
+}

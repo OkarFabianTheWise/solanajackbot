@@ -1,7 +1,7 @@
 // src/utils/helpers.ts
 import TelegramBot from 'node-telegram-bot-api';
 import { ParsedTransactionWithMeta } from '@solana/web3.js';
-import { BuyEventData } from '../types';
+import { BuyEventData, HolderInfo } from '../types';
 
 /**
  * Calculate win probability based on USD amount
@@ -95,6 +95,20 @@ export function createSocialsKeyboard(tokenAddress: string): TelegramBot.InlineK
   };
 }
 
+export function createHoldersKeyboard(): TelegramBot.InlineKeyboardMarkup {
+  return {
+    inline_keyboard: [
+      [
+        { text: '🌐 Website', url: 'https://www.blokbet.fun/' },
+        { text: '🐦 Twitter', url: 'https://x.com/blokbet_sol' },
+      ],
+      [
+        { text: '💬 Telegram', url: 'https://t.me/BlokBetPortal' }
+      ]
+    ]
+  };
+}
+
 /**
  * Create formatted message for Telegram
  */
@@ -118,6 +132,17 @@ ${playerLine}
 📊 Probability of win: <b>${data.chance}%</b>\n
 🥏 <u>Winning Num: ${data.winningNumber}</u>
 🎲 Pot: <b>[${data.potOfSamples.join(', ')}]</b>`;
+}
+
+export function createHoldersMessage(holder: HolderInfo): string {
+  return `
+♠️ <b>Lucky Holder WIN!</b>
+
+👤 <b>Winner</b> | <a href="https://solscan.io/account/${holder.wallet}" target="_blank">View</a> | <a href="https://solscan.io/tx/${holder.txHash}" target="_blank">Tx</a>
+💳 <b>Balance:</b> ${holder.balance.toLocaleString()} ${holder.tokenSymbol ?? 'CC'} ($${holder.balanceUsd.toLocaleString()})
+
+🏦 <b>Won:</b> ${holder.wonAmount} ${holder.wonSymbol ?? 'SOL'} ($${holder.wonUsd.toLocaleString()})
+`.trim();
 }
 
 /**

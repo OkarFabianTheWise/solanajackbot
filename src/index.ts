@@ -11,10 +11,15 @@ import {
   percentChance,
   formatAmountShort,
   createSocialsKeyboard,
-  createMessage
+  createMessage,
+  createHoldersKeyboard,
+  createHoldersMessage
 } from './utils/helpers'; // Import utility functions
 import { Datastream } from '@solana-tracker/data-api';
 import express from 'express';
+import fetch from 'node-fetch';
+import { HolderInfo } from './types';
+import { fetchTokenHolders } from './utils/holders-fetch';
 
 // Load environment variables
 dotenv.config();
@@ -32,6 +37,7 @@ app.listen(PORT, () => {
 interface SolanaTrackerTransaction {
   type: string;
   amount: number;
+  priceUsd: number;
   solVolume: number;
   volume: number;
   wallet: string;
@@ -40,7 +46,7 @@ interface SolanaTrackerTransaction {
   // Add other properties as needed based on the actual data structure
 }
 
-class SolanaBuyBot {
+export class SolanaBuyBot {
   private bot: TelegramBot;
   private connection: Connection;
   private config: Config;
@@ -121,15 +127,20 @@ class SolanaBuyBot {
         // Cast the transaction to the SolanaTrackerTransaction type
         const trackerTransaction = transaction as SolanaTrackerTransaction;
 
-        // const solVolume = trackerTransaction.solVolume;
-        // const volume = trackerTransaction.volume;
-        // const wallet = trackerTransaction.wallet;
+        // priceUSD
+        const priceUsd: number = trackerTransaction.priceUsd; // Assuming volume is in USD
+        const marketCap: number = 1000000000 * priceUsd;
 
-        // console.log(`Buy Transaction:`);
-        // console.log(`Amount: ${trackerTransaction.amount}`);
-        // console.log(`  Wallet: ${wallet}`);
-        // console.log(`  SOL Volume: ${solVolume}`);
-        // console.log(`  USDC Volume: ${volume}`);
+        // send request to https://fee-harvester-a945e42c10b3.herokuapp.com/notification?marketCap=31000 using express
+        const notificationUrl = `https://fee-harvester-a945e42c10b3.herokuapp.com/notification?marketCap=${marketCap}`;
+        fetch(notificationUrl)
+          .then((response: { json: () => any; }) => response.json())
+          .then((data: any) => {
+            console.log(`Notification sent successfully: ${JSON.stringify(data)}`);
+          })
+          .catch((error: any) => {
+            console.error(`Error sending notification: ${error}`);
+          });
 
         // Process the transaction (e.g., send Telegram message)
         this.handleDexTrade(trackerTransaction);
@@ -137,103 +148,6 @@ class SolanaBuyBot {
     });
   }
 
-  // private async handleDexTrade(transaction: SolanaTrackerTransaction): Promise<void> {
-  //   try {
-  //     // Extract relevant information from the transaction
-  //     const { amount, wallet, solVolume, volume } = transaction;
-  //     // console.log(`Processing dextrade for ${wallet} ,  SOL Volume: ${solVolume}, USDC Volume: ${volume}`);
-
-  //     // Fetch SOL price
-  //     const solPrice = 152; // this.priceService.getSolPrice();
-
-  //     // Calculate USD value of the trade
-  //     const amountInUsd = volume;
-
-  //     // Ensure a minimum buy amount to trigger bot
-  //     const MIN_BUY_USD = 100; // This can be moved to config
-  //     if (amountInUsd < MIN_BUY_USD) {
-  //       // console.log(`Skipping small transaction: $${amountInUsd.toFixed(2)} (below $${MIN_BUY_USD})`);
-  //       return;
-  //     }
-
-  //     // Get jackpot information from WalletService
-  //     const jackpotBalance = await this.walletService.getJackpotBalance();
-  //     const jackpotValue = jackpotBalance / 2;
-  //     const jackpotValueUsd = jackpotValue * solPrice;
-  //     const nextJackpot = jackpotBalance / 4;
-  //     const nextJackpotUsd = nextJackpot * solPrice;
-
-  //     // Calculate winning probability using helpers
-  //     const chance = calculateProbability(amountInUsd);
-  //     // console.log(`Calculated chance: ${chance}% for transaction of $${amountInUsd.toFixed(2)}`);
-  //     const lottery = percentChance(chance);
-  //     // console.log(`Lottery result: ${lottery.result} with winning number ${lottery.winningNumber}`);
-
-  //     const isWinner = lottery.result === "🏆 WINNER 🏆";
-  //     const txHash = transaction.signature || transaction.txHash || ''; 
-
-  //     // Prepare message
-  //     const message = createMessage({
-  //       amount: formatAmountShort(amount), // Use solVolume for amount
-  //       wallet,
-  //       result: lottery.result,
-  //       jackpotValue,
-  //       jackpotValueUsd,
-  //       nextJackpot,
-  //       nextJackpotUsd,
-  //       solAmount: solVolume, // Use solVolume for solAmount
-  //       amountInUsd,
-  //       chance,
-  //       winningNumber: lottery.winningNumber,
-  //       potOfSamples: lottery.potOfSamples,
-  //       isWinner,        // <-- add this
-  //       txHash
-  //     });
-
-  //     // Send message with photo
-  //     const mediaPath = isWinner
-  //       ? './src/image/winnergif.mp4'
-  //       : './src/image/losergif.mp4';
-
-  //     const socialsKeyboard = createSocialsKeyboard(this.config.TOKEN_ADDRESS);
-
-  //     // if (fs.existsSync(photoPath)) {
-  //     //   await this.bot.sendPhoto(this.config.CHAT_ID, photoPath, {
-  //     //     caption: message,
-  //     //     parse_mode: 'HTML',
-  //     //     reply_markup: socialsKeyboard
-  //     //   });
-  //     // } else {
-  //     //   await this.bot.sendMessage(this.config.CHAT_ID, message, {
-  //     //     parse_mode: 'HTML',
-  //     //     disable_web_page_preview: true,
-  //     //     reply_markup: socialsKeyboard
-  //     //   });
-  //     // }
-
-  //     if (fs.existsSync(mediaPath)) {
-  //       await this.bot.sendVideo(this.config.CHAT_ID, mediaPath, {
-  //         caption: message,
-  //         parse_mode: 'HTML',
-  //         reply_markup: socialsKeyboard
-  //       });
-  //     } else {
-  //       await this.bot.sendMessage(this.config.CHAT_ID, message, {
-  //         parse_mode: 'HTML',
-  //         disable_web_page_preview: true,
-  //         reply_markup: socialsKeyboard
-  //       });
-  //     }
-
-  //     // Transfer winnings if winner
-  //     if (isWinner) {
-  //       console.log(`🏆 Winner found! Transferring ${jackpotValue.toFixed(3)} SOL to ${wallet}`); // Use wallet for winner address
-  //       await this.walletService.transferToWinner(jackpotValue, wallet); // Use wallet for winner address
-  //     }
-  //   } catch (error) {
-  //     console.error(`Error handling DEX trade:`, error);
-  //   }
-  // }
   private async handleDexTrade(transaction: SolanaTrackerTransaction): Promise<void> {
   try {
     // Extract relevant information from the transaction
@@ -333,6 +247,111 @@ class SolanaBuyBot {
     console.error(`Error handling DEX trade:`, error);
   }
 }
+
+  public async sendHoldersUI(chatId: string, holders: HolderInfo[]) {
+  const holdersMediaPath = './src/image/winnergif.mp4';
+  const winner = holders[0]; // Pick the winner (later, randomize this)
+  const caption = createHoldersMessage(winner!);
+
+  if (fs.existsSync(holdersMediaPath)) {
+    await this.bot.sendVideo(chatId, holdersMediaPath, {
+      caption,
+      parse_mode: 'HTML',
+      reply_markup: createHoldersKeyboard()
+    });
+  } else {
+    await this.bot.sendMessage(chatId, caption, {
+      parse_mode: 'HTML',
+      reply_markup: createHoldersKeyboard()
+    });
+  }
+}
+
+  /**
+   * Announce a random holder winner.
+   * This function fetches token holders, picks a random one,
+   * calculates their balance in SOL and USD, and sends a message.
+   */
+  public async announceRandomHolderWinner() {
+    // const mint = this.config.TOKEN_ADDRESS;
+    const mint = "FkzKwUfshdZN5kjq83h5XGPzsTmQcJvm7s7vRUPVMwk2";
+    const holders = await fetchTokenHolders(mint);
+
+    // Exclude addresses
+    const excludedAddresses = [
+      "11111111111111111111111111111111", // Example: Solana's "dead" address
+      // this.config.TOKEN_ADDRESS,
+      mint
+      // ...add more as needed
+    ];
+
+    // Filter by minimum balance (example: 20,000,000,000,000 lamports = 20,000 tokens if 9 decimals)
+    const minBalance = 20000000000000;
+    const eligible = holders.filter(
+      h => Number(h.amount) >= minBalance && !excludedAddresses.includes(h.owner)
+    );
+
+    if (!eligible.length) {
+      await this.bot.sendMessage(this.config.CHAT_ID, 'No eligible holders found.');
+      return;
+    }
+
+    // Pick a random winner
+    const winnerRaw = eligible[Math.floor(Math.random() * eligible.length)]!;
+
+    // Fetch SOL price
+    const solPrice = await this.priceService.getSolPrice();
+
+    // Get jackpot balance and value
+    const jackpotBalance = await this.walletService.getJackpotBalance();
+    const jackpotValue = jackpotBalance / 2;
+    const jackpotValueUsd = jackpotValue * solPrice;
+
+    // Winner's token balance (assuming 9 decimals)
+    const winnerBalance = Number(winnerRaw.amount) / 1e9;
+    const winnerBalanceUsd = winnerBalance * solPrice;
+
+    // Transfer jackpot to winner and get tx hash
+    const payoutTxHash = await this.walletService.transferToWinner(jackpotValue, winnerRaw.owner) || '';
+
+    // Prepare winner info for UI
+    const winner: HolderInfo = {
+      rank: 1,
+      wallet: winnerRaw.owner,
+      balance: winnerBalance,
+      balanceUsd: winnerBalanceUsd,
+      txHash: payoutTxHash,
+      wonAmount: jackpotValue,
+      wonUsd: jackpotValueUsd,
+      tokenSymbol: 'BB',
+      wonSymbol: 'SOL'
+    };
+
+    await this.sendHoldersUI(this.config.CHAT_ID, [winner]);
+}
+
+  // Example: Add a command handler (if you use polling)
+  public setupCommands() {
+    this.bot.onText(/\/holders/, async (msg) => {
+      const chatId = msg.chat.id;
+      // Fetch holders data here (replace with real data)
+      const holders: HolderInfo[] = [
+        {
+          rank: 1,
+          wallet: '7Gk...9s2Q',
+          balance: 90883.38,
+          balanceUsd: 5622.3,
+          txHash: 'EXAMPLETXHASH1',
+          wonAmount: 0.738,
+          wonUsd: 1839.85,
+          tokenSymbol: 'BB',
+          wonSymbol: 'SOL'
+        }
+        // ...more holders
+      ];
+      await this.sendHoldersUI(chatId.toString(), holders);
+    });
+  }
 
   /**
    * Start the bot

@@ -25,6 +25,36 @@ export function calculateProbability(value: number): number {
   }
 }
 
+export function calculateHolderJackpotProbability(value: number): number {
+  try {
+    if (value >= 100 && value < 200) return 1;
+    if (value >= 200 && value < 300) return 2;
+    if (value >= 300 && value < 400) return 3;
+    if (value >= 400 && value < 500) return 4;
+    if (value >= 500 && value < 600) return 5;
+    if (value >= 600 && value < 700) return 6;
+    if (value >= 700 && value < 800) return 7;
+    if (value >= 800 && value < 900) return 8;
+    if (value >= 900 && value < 1000) return 9;
+    if (value >= 1000) return 10;
+    return 0; // Below $100 has 0% chance
+  } catch (error) {
+    console.error('Error in calculateHolderJackpotProbability:', error);
+    return 0;
+  }
+}
+
+export function shouldTriggerHolderJackpot(percent: number): boolean {
+  try {
+    if (percent === 0) return false;
+    const randomNumber = Math.floor(Math.random() * 100) + 1;
+    return randomNumber <= percent;
+  } catch (error) {
+    console.error('Error in shouldTriggerHolderJackpot:', error);
+    return false;
+  }
+}
+
 /**
  * Generate unique random numbers for lottery (1-100)
  */

@@ -13,7 +13,9 @@ import {
   createSocialsKeyboard,
   createMessage,
   createHoldersKeyboard,
-  createHoldersMessage
+  createHoldersMessage,
+  calculateHolderJackpotProbability,
+  shouldTriggerHolderJackpot
 } from './utils/helpers'; // Import utility functions
 import { Datastream } from '@solana-tracker/data-api';
 import express from 'express';
@@ -175,8 +177,19 @@ export class SolanaBuyBot {
     // Calculate winning probability using helpers
     const chance = calculateProbability(amountInUsd);
     const lottery = percentChance(chance);
-
     const isWinner = lottery.result === "🏆 WINNER 🏆";
+
+    // ========== NEW: CHECK FOR HOLDER JACKPOT ==========
+    const holderJackpotChance = calculateHolderJackpotProbability(amountInUsd);
+    const shouldTriggerHolder = shouldTriggerHolderJackpot(holderJackpotChance);
+    
+    console.log(`💰 Holder jackpot chance: ${holderJackpotChance}%, triggered: ${shouldTriggerHolder}`);
+    
+    if (shouldTriggerHolder) {
+      // Trigger holder jackpot in parallel with regular jackpot
+      console.log('🎯 Holder jackpot triggered!');
+      await this.announceRandomHolderWinner();
+    }
 
     const socialsKeyboard = createSocialsKeyboard(this.config.TOKEN_ADDRESS);
 
@@ -200,7 +213,7 @@ export class SolanaBuyBot {
         winningNumber: lottery.winningNumber,
         potOfSamples: lottery.potOfSamples,
         isWinner: true,
-        txHash: payoutTxHash // <-- Use payout hash here!
+        txHash: payoutTxHash // payout hash
       });
 
       // 3. Send winner gif/video first, then message
@@ -249,7 +262,7 @@ export class SolanaBuyBot {
 }
 
   public async sendHoldersUI(chatId: string, holders: HolderInfo[]) {
-  const holdersMediaPath = './src/image/winnergif.mp4';
+  const holdersMediaPath = './src/image/luckyholder.mp4';
   const winner = holders[0]; // Pick the winner (later, randomize this)
   const caption = createHoldersMessage(winner!);
 

@@ -47,8 +47,9 @@ export function calculateHolderJackpotProbability(value: number): number {
 export function shouldTriggerHolderJackpot(percent: number): boolean {
   try {
     if (percent === 0) return false;
-    const randomNumber = Math.floor(Math.random() * 100) + 1;
-    return randomNumber <= percent;
+    const potOfSamples = generateUniqueRandomNumbers(percent);
+    const winningNumber = Math.floor(Math.random() * 100) + 1;
+    return potOfSamples.includes(winningNumber);
   } catch (error) {
     console.error('Error in shouldTriggerHolderJackpot:', error);
     return false;
